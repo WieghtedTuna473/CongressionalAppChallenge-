@@ -9,3 +9,8 @@ for f in ["data","analyzer","app"]:
 assert 'href="css/' not in src and 'src="js/' not in src
 open("index.html","w",encoding="utf-8").write(src)
 print("built index.html",len(src),"bytes")
+
+import shutil
+for f in ["sw.js","manifest.webmanifest","icon.svg"]:
+    shutil.copy("src/pwa/"+f,f)
+print("copied sw.js, manifest.webmanifest, icon.svg")

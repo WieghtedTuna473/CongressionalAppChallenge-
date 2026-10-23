@@ -6,6 +6,7 @@
 <title>Second Look: check a message before you act</title>
 <meta name="description" content="Paste a suspicious text or email and get plain-language warning signs. Everything is checked on your device.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='14' r='9' fill='none' stroke='%230b5fa5' stroke-width='4'/%3E%3Cpath d='M21 21l8 8' stroke='%230b5fa5' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="manifest" href="manifest.webmanifest">
 <style>
 :root{--font:"Avenir Next","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
 --bg:#f2f6fa;--panel:#fff;--ink:#0d2a45;--mute:#4d647a;--line:#d3dfea;--brand:#0b5fa5;--brandInk:#fff;
@@ -14,7 +15,7 @@
 :root[data-theme="dark"]{--bg:#0b1a2b;--panel:#12273d;--ink:#e9f1f9;--mute:#9fb4c8;--line:#27405a;--brand:#6cb4f0;--brandInk:#0b1a2b;--ok:#5fd394;--okBg:#123a2a;--warn:#f2b84b;--warnBg:#3a2e10;--bad:#ff8a80;--badBg:#401a18;color-scheme:dark}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.6 var(--font);-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:1.125rem/1.6 var(--font);-webkit-text-size-adjust:100%}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
 [hidden]{display:none!important}
 a{color:var(--brand)}
@@ -81,6 +82,21 @@ mark{color:inherit;border-radius:3px;padding:0 2px}
 .proof strong{font-size:1.4rem;color:var(--ok)}
 .mini{margin:6px 0 0;padding-left:20px}
 footer.site{max-width:1040px;margin:0 auto;padding:20px;color:var(--mute);font-size:.9rem;border-top:1px solid var(--line)}
+
+.tools{display:flex;gap:6px;flex-wrap:wrap}
+.tools button{min-height:40px;padding:6px 12px;border-radius:10px;border:2px solid var(--line);background:var(--panel);color:var(--ink);font:700 .95rem var(--font);cursor:pointer}
+.tools button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.feat a.card{text-decoration:none;color:var(--ink)}.feat a.card:hover{border-color:var(--brand)}.feat p{margin:4px 0 0;color:var(--mute)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.feedback{border-left:8px solid var(--line);padding:8px 14px;margin:12px 0;border-radius:6px;background:var(--bg)}
+.feedback.good{border-left-color:var(--ok)}.feedback.bad{border-left-color:var(--bad)}.feedback p{margin:6px 0}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:16px 0}
+.stat{background:var(--bg);border-radius:14px;padding:14px}.stat strong{display:block;font-size:1.8rem}.stat span{color:var(--mute)}
+#evalOut details{margin-top:8px}#evalOut details p{font-size:.95rem;margin:6px 0}
+.wallet{border:3px dashed var(--brand)}.wallet ol{padding-left:22px}
+:root[data-contrast="high"]{--bg:#fff;--panel:#fff;--ink:#000;--mute:#1a1a1a;--line:#555;--brand:#003c78;--brandInk:#fff;--ok:#005a2b;--okBg:#e6f5ec;--warn:#6b3d00;--warnBg:#fff3cf;--bad:#8c0000;--badBg:#fde6e6}
+:root[data-contrast="high"] .card,:root[data-contrast="high"] .btn,:root[data-contrast="high"] textarea{border-width:3px}
+@media print{body *{visibility:hidden}.wallet,.wallet *{visibility:visible}.wallet{position:absolute;left:0;top:0;width:100%;border-color:#000}}
 </style>
 </head>
 <body>
@@ -92,10 +108,17 @@ footer.site{max-width:1040px;margin:0 auto;padding:20px;color:var(--mute);font-s
   </a>
   <nav aria-label="Main">
     <a href="#/" data-p="home">Home</a>
-    <a href="#/check" data-p="check">Check a message</a>
-    <a href="#/learn" data-p="learn">Common scams</a>
+    <a href="#/check" data-p="check">Check</a>
+    <a href="#/practice" data-p="practice">Practice</a>
+    <a href="#/learn" data-p="learn">Learn</a>
+    <a href="#/accuracy" data-p="accuracy">Accuracy</a>
     <a href="#/privacy" data-p="privacy">Privacy</a>
   </nav>
+  <div class="tools" role="group" aria-label="Display settings">
+    <button id="smaller" type="button" aria-label="Smaller text">A−</button>
+    <button id="bigger" type="button" aria-label="Larger text">A+</button>
+    <button id="contrast" type="button" aria-pressed="false">High contrast</button>
+  </div>
 </header>
 
 <main id="main">
@@ -107,6 +130,11 @@ footer.site{max-width:1040px;margin:0 auto;padding:20px;color:var(--mute);font-s
       <div class="actions"><a class="btn primary" href="#/check">Check a message</a><a class="btn" href="#/privacy">How your privacy is protected</a></div>
     </div>
     <div class="card demo" aria-label="Example result"><p class="meta">Example: a text claiming to be from a bank</p><div id="demo"></div></div>
+  </div>
+  <div class="grid three feat">
+    <a class="card" href="#/check"><h2>Check a message</h2><p>Paste a text or email and see the warning signs.</p></a>
+    <a class="card" href="#/practice"><h2>Practice</h2><p>Test your own eye with ten quick messages.</p></a>
+    <a class="card" href="#/learn"><h2>Print a wallet card</h2><p>A pocket reminder and who to call in Georgia.</p></a>
   </div>
   <h2 class="sec">How it works</h2>
   <ol class="steps">
@@ -132,10 +160,44 @@ footer.site{max-width:1040px;margin:0 auto;padding:20px;color:var(--mute);font-s
   <div id="result" hidden aria-live="polite"></div>
 </section>
 
+<section id="p-practice" class="page" hidden>
+  <h1>Practice spotting scams</h1>
+  <p class="lead">Ten quick messages. Decide if each is a scam or looks real, then see why.</p>
+  <div class="card" id="quiz"></div>
+</section>
+
+<section id="p-accuracy" class="page" hidden>
+  <h1>How well does it work?</h1>
+  <p class="lead">Test it yourself, right here. The mistakes are shown too.</p>
+  <div class="card"><button class="btn primary" id="runEval" type="button">Run the test now</button><div id="evalOut" aria-live="polite"></div></div>
+  <div class="card">
+    <h2>Read this before trusting the numbers</h2>
+    <ul>
+      <li>The test messages were never used to train the word model, but they were written by the developer, so results are likely better than in the real world.</li>
+      <li>Weights were set by judgment and adjusted on a handful of examples. The test set was scored once, with no changes afterward.</li>
+      <li>“Warning” means Be careful or Likely a scam. “Likely scam” is a stricter label, so some scams only reach Be careful.</li>
+      <li>New scam styles can slip through. Treat Second Look as a second opinion, not a guarantee.</li>
+    </ul>
+  </div>
+</section>
+
 <section id="p-learn" class="page" hidden>
   <h1>Common scams</h1>
   <p class="lead">Scammers reuse the same few stories. Knowing them makes them easy to spot.</p>
   <div class="grid" id="scams"></div>
+  <div class="card">
+    <h2>Help in Georgia</h2>
+    <ul>
+      <li><strong>Georgia Attorney General’s Consumer Protection Division:</strong> <a href="https://consumer.georgia.gov" rel="noopener">consumer.georgia.gov</a>. Call (404) 651-8600, or toll-free in Georgia (800) 869-1123.</li>
+      <li>That site also has a Consumer Protection Guide for Older Adults.</li>
+    </ul>
+  </div>
+  <div class="card wallet" id="wallet">
+    <h2>Before you click, tap or pay</h2>
+    <ol><li>Pause. Scams rush you.</li><li>Don’t use links or phone numbers in the message.</li><li>Call a number you already trust.</li><li>Never pay with gift cards, wire transfers or crypto.</li><li>Tell someone you trust.</li></ol>
+    <p>Report scams: reportfraud.ftc.gov. In Georgia: (800) 869-1123.</p>
+  </div>
+  <p><button class="btn" id="print" type="button">Print this card</button></p>
   <div class="card">
     <h2>If you think you’ve been scammed</h2>
     <ul>
@@ -167,6 +229,7 @@ footer.site{max-width:1040px;margin:0 auto;padding:20px;color:var(--mute);font-s
       <li><strong>Rules.</strong> <span id="ruleCount"></span> checks look for pressure, threats, payment requests, private-information requests, and fake or lookalike links. Each finding comes with a plain-language reason.</li>
       <li><strong>A small word model.</strong> A naive Bayes classifier learns from <span id="corpusCount"></span> short example messages when the page loads. It adds a gentle nudge to the score (20%), and the rules carry the rest.</li>
     </ul>
+    <p>The only thing this page remembers is your text size and contrast choice, stored in your browser. Your messages are never stored.</p>
     <p class="meta">This is a helper, not a guarantee. It can miss new scams and flag real messages. When in doubt, contact the company using a number you already trust.</p>
   </div>
 </section>
@@ -214,6 +277,75 @@ ham:[
 "Library books are due Monday you can renew them online",
 "Practice is at 5 today please bring your water bottle"
 ]};
+
+CORPUS.scam.push("Your Netflix account is on hold update your payment details to continue watching","Social Security alert your number has been linked to illegal activity call this number","Claim your inheritance fund transfer needs a small processing fee","Your Apple ID has been locked confirm your identity to restore access","I need you to buy gift cards for a client and send me the codes today","Pay your overdue toll now to avoid additional fees and legal action","You qualify for a government grant pay a small fee to receive your money","Security warning your device is infected install this app to remove the virus");
+CORPUS.ham.push("Your table for four is confirmed for 7 pm tonight see you there","Your order is ready for pickup at the front counter","Can you send me the photos from the trip when you get a chance","Your bill is ready you can view it in your account whenever you like","Doctor Smith will see you on Tuesday at 10 please arrive 15 minutes early","School pickup is at 3 today do not forget the permission slip","Your flight is on time boarding begins at 5 45 at gate B12","Thanks for the update I will review the document and reply tomorrow");
+
+// Held-out test messages: never used for training. Written by the developer, so treat results as a rough guide.
+var S=function(t){return {text:t,scam:true}},R=function(t){return {text:t,scam:false}};
+var TESTSET=[
+S("Wells Fargo: We noticed suspicious activity on your debit card. Confirm your PIN at wellsfargo-verify.top/pin now."),
+S("Your Social Security benefits have been suspended due to fraud. Call 1-888-555-0142 immediately to reactivate."),
+S("Hey Grandpa, it's me. I got in a car accident and need $800 for the repair, please send it by Zelle and don't tell Dad."),
+S("Netflix: Your payment was declined. Update your billing information within 24 hours or your account will be cancelled: netflix-billing.click/update"),
+S("FedEx: We couldn't deliver your package. Confirm your address and pay a $2.40 fee: fedex-redelivery.info/pay"),
+S("Congratulations! You've been selected to receive a $1000 Walmart gift card. Claim your reward here: bit.ly/walmrt1000"),
+S("This is Officer Brown from the sheriff's office. There is a warrant for your arrest. Pay the fine with gift cards to avoid jail."),
+S("Microsoft Support: Your PC is infected with a virus. Call now so our technician can connect with remote access."),
+S("Make passive income with our crypto trading program. Guaranteed returns of 40% weekly. Limited spots!"),
+S("Dear customer, your Apple ID has been locked. Verify your identity at appleid-support.xyz to unlock."),
+S("Hi, this is your CEO. I need you to buy 10 Apple gift cards for clients. Scratch off the codes and send me photos. Keep this confidential."),
+S("E-ZPass: You have an unpaid toll balance of $12.80. Pay now to avoid a late fee: ezpass-tolls-pay.top"),
+S("Your Amazon account has been compromised. Call us at 1-800-555-0199 so we can secure it."),
+S("Hello, I am a widow with an inheritance of $4 million and need your help to move it. You will receive 30%."),
+S("I've been following your profile and I think we'd be great together. I trade crypto and made a fortune. Let me show you how."),
+S("IRS: You owe $3,200 in back taxes. Failure to pay today will result in legal action. Call 888-555-0111."),
+S("Your mailbox storage is full. Click here to confirm your password to avoid losing emails."),
+S("USPS: Your package is waiting. Update delivery preferences: usps-parcel-hold.com/confirm"),
+S("Medicare: Your new card is ready. Reply with your Medicare number and bank details to receive it."),
+S("Final warning: Your car warranty is about to expire. Call now to renew."),
+S("Hi Mom, I lost my phone, this is my new number. Can you send me money for a bill? It's urgent."),
+S("Security alert: Someone tried to sign in to your Google account. Verify it was you: g00gle-security.com/check"),
+S("You have a refund of $420 waiting. Provide your account number to receive the payment."),
+S("Tech Support: We detected malware. Allow TeamViewer access to fix it."),
+R("Chase: A $52.10 purchase at Kroger was made on your card ending 1234. Reply STOP to opt out."),
+R("Your Amazon order has shipped. Track it in the Amazon app. Arriving Thursday."),
+R("Georgia Power: Your bill of $118.42 is ready. View it at georgiapower.com."),
+R("Your verification code is 552901. It expires in 10 minutes. Never share this code."),
+R("Hi, it's Dana. Running 10 minutes late, start without me."),
+R("Reminder: Council meeting Thursday 7 PM at City Hall. Agenda attached."),
+R("Your prescription is ready for pickup at CVS. Reply 1 to refill another."),
+R("Mom, can you call me when you get a chance? Nothing urgent."),
+R("Thanks for your payment of $64.00. Your receipt is attached."),
+R("Your Delta flight DL 1234 to Atlanta departs at 6:15 AM. Check in at delta.com."),
+R("Your appointment with Dr. Lee is tomorrow at 2 PM. Reply C to confirm or R to reschedule."),
+R("Don't forget: parent-teacher conferences are this week. Sign up on the school website."),
+R("PayPal: You received $25.00 from Sam. Log in at paypal.com to see details."),
+R("Happy anniversary! Dinner at 7 tonight, I booked your favorite place."),
+R("Your Spotify subscription renews on Nov 3 for $11.99. Manage it in your account settings."),
+R("Hi team, the quarterly report is attached. Please send your comments by Friday."),
+R("Bank of America: Your statement is ready. Sign in at bankofamerica.com to view it."),
+R("Your Uber is arriving in 2 minutes. Look for a white Toyota Camry."),
+R("Library: Your hold is ready for pickup until Saturday."),
+R("Walgreens: Your photos are ready for pickup."),
+R("Hey, can you send me the address for Saturday? I'll bring snacks."),
+R("Your Zoom meeting with Priya starts in 15 minutes: zoom.us/j/123456789"),
+R("Costco: Your order is ready for pickup at the Duluth warehouse."),
+R("Weather alert: Severe thunderstorm warning for your area until 8 PM. Stay indoors.")
+];
+
+var PRACTICE=[
+{text:"Hi, this is Sam from Peach State Bank. We noticed a $900 charge. Reply with your full card number so we can cancel it.",scam:true,why:"Banks never ask you to text your full card number. The fear of a charge is the hook."},
+{text:"Your dentist reminder: appointment Tuesday at 9:30 AM. Reply C to confirm.",scam:false,why:"A routine reminder with no link, no pressure, and no request for money or private details."},
+{text:"Grandma, I’m in trouble and need $500 right now. Please don’t call Mom or Dad. Send it with gift cards.",scam:true,why:"An emergency, secrecy, and gift cards are the classic grandparent scam."},
+{text:"Your package from Amazon was delivered to your front door at 2:14 PM.",scam:false,why:"A simple delivery notice. It asks nothing of you and has no link."},
+{text:"FINAL NOTICE: You have an unpaid toll. Pay today at tollpay-georgia.top or face a penalty.",scam:true,why:"Urgent threat, an odd .top web address, and a payment link you never asked for."},
+{text:"Congratulations! You won a $500 gift card. Pay a $4.95 shipping fee to claim it.",scam:true,why:"You can’t win a contest you didn’t enter, and real prizes don’t charge a fee."},
+{text:"Your pharmacy order is ready. Pick it up any time before Friday.",scam:false,why:"Specific, calm, and it asks you to do something ordinary."},
+{text:"Social Security Administration: Your number has been suspended. Call 888-555-0123 now to avoid arrest.",scam:true,why:"Government agencies don’t threaten arrest by text or ask you to call a number in a message."},
+{text:"Hey, running late. Can you grab me a coffee? I’ll pay you back tonight.",scam:false,why:"Everyday message from someone you know. No pressure, no link, no strange payment."},
+{text:"Microsoft Security: Your computer has a virus! Call now and allow remote access to fix it.",scam:true,why:"Real companies don’t cold-call or text about viruses, and never need remote access to your computer."}
+];
 var EXAMPLES=[
 {label:"Bank text",text:"Chase Alert: Your account has been locked due to unauthorized activity. Verify your identity within 24 hours: http://chase-secure-login.top/verify"},
 {label:"Boss gift cards",text:"Hi, it's Dana. I'm in a meeting and can't talk. I need 5 Google Play gift cards for a client today. Send me the codes and keep this between us."},
@@ -230,7 +362,7 @@ var SCAMS=[
 {name:"Prizes and inheritances",looks:"“You’ve won! Pay a small fee to claim your prize.”",tell:"You must pay or share details before you can collect.",todo:"Real prizes never charge you. Ignore it."},
 {name:"Romance and investment",looks:"“I’ve made a fortune with crypto. Guaranteed returns.”",tell:"A new online friend, guaranteed profits, and pressure to move fast.",todo:"Talk to someone you trust before sending any money."}
 ];
-var api={CORPUS:CORPUS,EXAMPLES:EXAMPLES,SCAMS:SCAMS};
+var api={CORPUS:CORPUS,EXAMPLES:EXAMPLES,SCAMS:SCAMS,TESTSET:TESTSET,PRACTICE:PRACTICE};
 if(typeof module!=="undefined"&&module.exports)module.exports=api;else root.AppData=api;
 })(this);
 </script>
@@ -265,6 +397,7 @@ var URL_RE=/(?:https?:\/\/|www\.)[^\s<>"')]+|\b[a-z0-9][a-z0-9-]*(?:\.[a-z0-9-]+
 function extractUrls(text){var out=[],m;URL_RE.lastIndex=0;while((m=URL_RE.exec(text))){var raw=m[0].replace(/[.,;:!?]+$/,"");if(m.index>0&&text.charAt(m.index-1)==="@")continue;out.push({raw:raw,start:m.index,end:m.index+raw.length})}return out}
 function norm(h){return h.replace(/rn/g,"m").replace(/0/g,"o").replace(/1/g,"l").replace(/3/g,"e").replace(/\$/g,"s")}
 var NAMES={paypal:"PayPal",usps:"USPS",fedex:"FedEx",ups:"UPS",irs:"the IRS",wellsfargo:"Wells Fargo",bankofamerica:"Bank of America",citibank:"Citibank"};
+function genuine(h,b){var L=h.split("."),tld=L[L.length-1],first=L.length>1?L[L.length-2]:h;return(first===b&&/^(com|gov|org)$/.test(tld))||(L.length>=3&&/^(co|com)$/.test(first)&&L[L.length-3]===b)}
 function cap(s){return NAMES[s]||s.charAt(0).toUpperCase()+s.slice(1)}
 function analyzeUrl(u){
   var s=u.raw.replace(/^https?:\/\//i,""),auth=s.split(/[\/?#]/)[0],at=false;
@@ -279,11 +412,31 @@ function analyzeUrl(u){
   var n=norm(h);
   for(var i=0;i<BRANDS.length;i++){var b=BRANDS[i];
     if(n.indexOf(b)>-1){
-      var ok=(first===b&&/^(com|gov|org)$/.test(tld))||(L.length>=3&&/^(co|com)$/.test(first)&&L[L.length-3]===b);
+      var ok=genuine(h,b);
       if(!ok){f.push("The name imitates "+cap(b)+", but the real website here is "+reg+".");break}
     }}
   return {raw:u.raw,host:h,flags:f,start:u.start,end:u.end};
 }
+
+var FROM_RE=/^[ \t]*(from|reply-to)[ \t]*:[ \t]*(.+)$/gim;
+function senderChecks(text){
+  var froms=[],reps=[],m,notes=[],marks=[];
+  FROM_RE.lastIndex=0;
+  while((m=FROM_RE.exec(text))){
+    var em=m[2].match(/<?([A-Z0-9._%+-]+)@([A-Z0-9.-]+\.[A-Z]{2,})>?/i);if(!em)continue;
+    var o={name:m[2].replace(/<.*$/,"").replace(/["']/g,"").trim().toLowerCase().replace(/[^a-z]/g,""),dom:em[2].toLowerCase(),s:m.index,e:m.index+m[0].length};
+    (/^reply/i.test(m[1])?reps:froms).push(o);
+  }
+  froms.forEach(function(f){
+    var hit=false;
+    analyzeUrl({raw:f.dom}).flags.forEach(function(x){notes.push("Sender address "+f.dom+": "+x);hit=true});
+    BRANDS.forEach(function(b){if(f.name.indexOf(b)>-1&&!genuine(f.dom,b)){notes.push("The sender’s name says "+cap(b)+", but the address is "+f.dom+".");hit=true}});
+    reps.forEach(function(r){if(r.dom.split(".").slice(-2).join(".")!==f.dom.split(".").slice(-2).join(".")){notes.push("Replies go to "+r.dom+", not to "+f.dom+".");hit=true;marks.push({s:r.s,e:r.e})}});
+    if(hit)marks.push({s:f.s,e:f.e});
+  });
+  return {notes:notes,marks:marks};
+}
+var MIXED=/[A-Za-z][\u0370-\u03FF\u0400-\u04FF]|[\u0370-\u03FF\u0400-\u04FF][A-Za-z]/g,HIDDEN=/[\u200B-\u200D\u2060\uFEFF]/g,MAXLEN=5000;
 
 // Tiny naive Bayes word model, trained when the page loads from the example messages in data.js.
 var MODEL=null;
@@ -305,6 +458,7 @@ function classify(text){
 
 function analyze(text){
   text=String(text||"");
+  var truncated=text.length>MAXLEN;if(truncated)text=text.slice(0,MAXLEN);
   var findings=[],marks=[],raw=0,ids={};
   RULES.forEach(function(r){
     var hits=findAll(r.re,text,r.neg);
@@ -315,6 +469,11 @@ function analyze(text){
   });
   var words=text.match(/[A-Za-z]{3,}/g)||[],caps=words.filter(function(w){return w===w.toUpperCase()}).length;
   if((caps>=4&&caps/Math.max(words.length,1)>0.3)||/!{3,}/.test(text)){ids.shout=1;raw+=6;findings.push({id:"shout",w:6,title:"Shouting",why:"ALL CAPS and lots of exclamation marks are used to alarm you.",tip:"Calm, official messages rarely shout.",snips:[]})}
+  var sc=senderChecks(text);
+  if(sc.notes.length){ids.sender=1;raw+=Math.min(40,24+8*sc.notes.length);findings.push({id:"sender",w:34,title:"The sender doesn’t add up",why:"The name shown and the real address don’t match, or the address imitates a real company.",tip:"Don’t reply. Contact the company using a number or website you already know.",snips:sc.notes});sc.marks.forEach(function(k){marks.push({s:k.s,e:k.e,id:"sender"})})}
+  var mixed=findAll(MIXED,text);
+  if(mixed.length){ids.homoglyph=1;raw+=28;findings.push({id:"homoglyph",w:30,title:"Disguised letters",why:"Some letters come from other alphabets and look identical to ours. Scammers use them to imitate real names and slip past filters.",tip:"Treat the message as fake unless you can confirm it another way.",snips:[]});mixed.forEach(function(h){marks.push({s:h[0],e:h[1],id:"homoglyph"})})}
+  if(HIDDEN.test(text)){ids.hidden=1;raw+=10;findings.push({id:"hidden",w:10,title:"Hidden characters",why:"Invisible characters are sometimes used to hide a message from spam filters.",tip:"Be extra careful with this one.",snips:[]})}
   var links=extractUrls(text).map(analyzeUrl),bad=links.filter(function(l){return l.flags.length}),nf=0;
   bad.forEach(function(l){nf+=l.flags.length;marks.push({s:l.start,e:l.end,id:"links"})});
   if(bad.length){ids.links=1;raw+=Math.min(40,20+8*nf);findings.push({id:"links",w:30,title:"A suspicious link",why:"The web address looks fake or hides where it goes. Scammers copy real sites to steal passwords.",tip:"Don’t tap it. Type the company’s real web address yourself.",snips:bad.map(function(l){return l.host})})}
@@ -322,12 +481,22 @@ function analyze(text){
   if(ids.links&&(ids.urgency||ids.threat))bonus+=10;
   if(ids.payment&&(ids.urgency||ids.secrecy||ids.impersonation||ids.family))bonus+=10;
   if(ids.secrets&&(ids.links||ids.impersonation))bonus+=8;
+  if(ids.sender&&(ids.urgency||ids.threat||ids.secrets))bonus+=10;
   var rule=Math.min(100,raw+bonus),nb=text.trim()?classify(text):0;
   var score=text.trim()?Math.round(rule*0.8+nb*100*0.2):0;
   findings.sort(function(a,b){return b.w-a.w});
-  return {score:score,level:score>=55?"scam":score>=25?"warn":"ok",rule:rule,model:nb,findings:findings,links:links,marks:marks};
+  return {score:score,level:score>=55?"scam":score>=25?"warn":"ok",rule:rule,model:nb,truncated:truncated,findings:findings,links:links,marks:marks};
 }
-var api={analyze:analyze,classify:classify,analyzeUrl:analyzeUrl,extractUrls:extractUrls,RULES:RULES};
+function evaluate(set){
+  var r={n:set.length,scamN:0,legitN:0,caught:0,strong:0,falseFlags:0,falseStrong:0,misses:[]};
+  set.forEach(function(x){
+    var res=analyze(x.text);
+    if(x.scam){r.scamN++;if(res.score>=25)r.caught++;else r.misses.push({text:x.text,scam:true,score:res.score});if(res.score>=55)r.strong++}
+    else{r.legitN++;if(res.score>=25){r.falseFlags++;r.misses.push({text:x.text,scam:false,score:res.score})}if(res.score>=55)r.falseStrong++}
+  });
+  r.accuracy=(r.caught+r.legitN-r.falseFlags)/r.n;return r;
+}
+var api={evaluate:evaluate,analyze:analyze,classify:classify,analyzeUrl:analyzeUrl,extractUrls:extractUrls,RULES:RULES};
 if(typeof module!=="undefined"&&module.exports)module.exports=api;else root.Analyzer=api;
 })(this);
 </script>
@@ -339,13 +508,71 @@ var A=window.Analyzer,D=window.AppData,NS="http://www.w3.org/2000/svg",first=tru
 function $(i){return document.getElementById(i)}
 function h(t,c,x){var n=document.createElement(t);if(c)n.className=c;if(x!=null)n.textContent=x;return n}
 function reqCount(){try{return performance.getEntriesByType("resource").length}catch(e){return 0}}
-var TITLES={home:"Second Look: check a message before you act",check:"Check a message | Second Look",learn:"Common scams | Second Look",privacy:"Privacy | Second Look"};
+var TITLES={practice:"Practice | Second Look",accuracy:"Accuracy | Second Look",home:"Second Look: check a message before you act",check:"Check a message | Second Look",learn:"Common scams | Second Look",privacy:"Privacy | Second Look"};
 var VERDICT={
  scam:{head:"This looks like a scam",body:"Don’t click, reply, or send anything."},
  warn:{head:"Be careful with this one",body:"Some things don’t add up. Check before you act."},
  ok:{head:"No warning signs found",body:"That doesn’t make it safe. If it asks for money or personal details, check another way."}};
 var NEXT=["Don’t use any link or phone number in the message.","Contact the company using the number on your card, or a website you already know.","Tell someone you trust before you send money or information.","Report scams at reportfraud.ftc.gov."];
 
+var prefs={size:0,high:false},SIZES=[100,115,130,150];
+function loadPrefs(){try{var p=JSON.parse(localStorage.getItem("sl-prefs")||"{}");prefs.size=Math.max(0,Math.min(3,+p.size||0));prefs.high=!!p.high}catch(e){}}
+function applyPrefs(){
+  document.documentElement.style.fontSize=SIZES[prefs.size]+"%";
+  if(prefs.high)document.documentElement.setAttribute("data-contrast","high");else document.documentElement.removeAttribute("data-contrast");
+  $("contrast").setAttribute("aria-pressed",String(prefs.high));
+  try{localStorage.setItem("sl-prefs",JSON.stringify(prefs))}catch(e){}
+}
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
+function summaryText(res){
+  var V=VERDICT[res.level];
+  return "Second Look checked a message. Result: "+V.head+" (warning score "+res.score+" of 100)."+(res.findings.length?" Reasons: "+res.findings.slice(0,4).map(function(f){return f.title}).join("; ")+".":"")+" Advice: don’t use links or phone numbers in the message, and contact the company using a number you already trust.";
+}
+function copyText(t,done){
+  function fb(){var ta=h("textarea");ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand("copy")}catch(e){}document.body.removeChild(ta);done()}
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(done,fb);else fb();
+}
+function quiz(){
+  var box=$("quiz"),items=shuffle(D.PRACTICE),i=0,right=0;
+  function head(){box.appendChild(h("p","meta","Message "+(i+1)+" of "+items.length));box.appendChild(h("p","msg",items[i].text))}
+  function show(){
+    box.textContent="";
+    if(i>=items.length){
+      box.appendChild(h("h2",null,"You got "+right+" of "+items.length+" right"));
+      box.appendChild(h("p",null,right>=items.length-1?"Great eye. You would spot most of these in real life.":"Good effort. Scammers count on you rushing, so slow down and look for pressure, fear, and requests for money."));
+      var again=h("button","btn primary","Play again");again.type="button";again.onclick=quiz;box.appendChild(again);return;
+    }
+    head();
+    var row=h("div","row2"),a=h("button","btn","It’s a scam"),b=h("button","btn","Looks real");a.type=b.type="button";
+    function pick(say){
+      var it=items[i],ok=say===it.scam;if(ok)right++;
+      box.textContent="";head();
+      var fb=h("div","feedback "+(ok?"good":"bad"));fb.setAttribute("role","status");
+      fb.appendChild(h("strong",null,(ok?"Correct. ":"Not quite. ")+(it.scam?"This was a scam.":"This one was real.")));
+      fb.appendChild(h("p",null,it.why));
+      fb.appendChild(h("p","meta","Second Look’s score for this message: "+A.analyze(it.text).score+" of 100."));
+      box.appendChild(fb);
+      var nx=h("button","btn primary",i+1<items.length?"Next message":"See my score");nx.type="button";nx.onclick=function(){i++;show()};box.appendChild(nx);nx.focus();
+    }
+    a.onclick=function(){pick(true)};b.onclick=function(){pick(false)};
+    row.appendChild(a);row.appendChild(b);box.appendChild(row);
+  }
+  show();
+}
+function runEval(){
+  var r=A.evaluate(D.TESTSET),o=$("evalOut");o.textContent="";
+  function stat(big,label){var d=h("div","stat");d.appendChild(h("strong",null,big));d.appendChild(h("span",null,label));return d}
+  var g=h("div","stats");
+  g.appendChild(stat(r.caught+" of "+r.scamN,"scam messages got a warning"));
+  g.appendChild(stat(r.strong+" of "+r.scamN,"were called a likely scam"));
+  g.appendChild(stat(r.falseFlags+" of "+r.legitN,"real messages wrongly warned about"));
+  o.appendChild(g);
+  if(r.misses.length){
+    var d=h("details");d.appendChild(h("summary",null,"Show the mistakes ("+r.misses.length+")"));
+    r.misses.forEach(function(m){d.appendChild(h("p",null,(m.scam?"Missed scam: ":"False alarm: ")+m.text+" (score "+m.score+")"))});o.appendChild(d);
+  }else o.appendChild(h("p","meta","No mistakes on this set. That does not mean it is perfect. See the notes below."));
+  o.appendChild(h("p","meta","Tested on "+r.n+" messages the word model was never trained on."));
+}
 function route(){
   var k=location.hash.replace(/^#\/?/,"").split("?")[0]||"home";
   if(!TITLES[k])k="home";
@@ -389,7 +616,11 @@ function renderResult(res,text,box){
   box.textContent="";box.hidden=false;
   var vb=verdictBlock(res);box.appendChild(vb);
   var todo=h("div","card todo");todo.appendChild(h("h2",null,res.level==="ok"?"Still unsure? Do this":"What to do now"));
-  var ol=h("ol");NEXT.forEach(function(s){ol.appendChild(h("li",null,s))});todo.appendChild(ol);box.appendChild(todo);
+  var ol=h("ol");NEXT.forEach(function(s){ol.appendChild(h("li",null,s))});todo.appendChild(ol);
+  if(res.truncated)todo.appendChild(h("p","meta","This message was long, so only the first 5,000 characters were checked."));
+  var cb=h("button","btn","Copy a summary to share"),st=h("span","meta");cb.type="button";st.setAttribute("role","status");
+  cb.onclick=function(){copyText(summaryText(res),function(){st.textContent="Copied. The message itself was not included."})};
+  var cr=h("p");cr.appendChild(cb);todo.appendChild(cr);todo.appendChild(st);box.appendChild(todo);
   box.appendChild(h("h2","sec","What we noticed"));
   if(!res.findings.length)box.appendChild(h("div","card","We didn’t find the usual warning signs in this message."));
   res.findings.forEach(function(f){
@@ -439,8 +670,16 @@ function init(){
     var a=h("p");a.appendChild(h("strong",null,"The giveaway: "));a.appendChild(document.createTextNode(s.tell));c.appendChild(a);
     var b=h("p");b.appendChild(h("strong",null,"What to do: "));b.appendChild(document.createTextNode(s.todo));c.appendChild(b);sc.appendChild(c);
   });
-  $("ruleCount").textContent=String(A.RULES.length+2);
+  $("ruleCount").textContent=String(A.RULES.length+5);
   $("corpusCount").textContent=String(D.CORPUS.scam.length+D.CORPUS.ham.length);
+  $("runEval").onclick=runEval;
+  $("print").onclick=function(){window.print()};
+  quiz();
+  loadPrefs();applyPrefs();
+  $("smaller").onclick=function(){prefs.size=Math.max(0,prefs.size-1);applyPrefs()};
+  $("bigger").onclick=function(){prefs.size=Math.min(3,prefs.size+1);applyPrefs()};
+  $("contrast").onclick=function(){prefs.high=!prefs.high;applyPrefs()};
+  if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(function(){});
   window.addEventListener("hashchange",route);route();
 }
 init();

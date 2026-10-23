@@ -2,41 +2,30 @@
 
 A scam-message checker that runs entirely on your device. Paste a suspicious text or email and it explains each warning sign in plain language. Nothing is uploaded, saved, or tracked.
 
-## Run it
-Open `index.html` in a browser. It is one self-contained file, so it also works on GitHub Pages: upload just `index.html`.
-Run the tests with `node tests/analyzer.test.js`. To rebuild `index.html` after editing `src/`, run `python3 build.py`.
+## Run or host it
+- Open `index.html` in a browser, or host these four files together in one folder (GitHub Pages works): `index.html`, `sw.js`, `manifest.webmanifest`, `icon.svg`. No subfolders are needed.
+- `index.html` alone also works. The other three files only add "install as an app" and offline use.
+- Tests: `node tests/analyzer.test.js`. Accuracy on held-out messages: `node tests/evaluate.js`.
+- To rebuild after editing `src/`: `python3 build.py`.
 
 ## Pages
-Home, Check a message, Common scams, Privacy (single page with hash routing, keyboard and screen-reader friendly, light and dark mode).
+Home, Check, Practice (a 10-question spot-the-scam quiz), Learn (common scams, Georgia help, printable wallet card), Accuracy (run the test live, with mistakes shown), Privacy (with a live network-request counter).
 
-## How it works
-- `src/js/analyzer.js`: the checker. No DOM, no network.
-  - 13 rule checks (pressure, threats, hard-to-trace payment, requests for codes or passwords, prizes, secrecy, impersonation, package notices, family-emergency stories, tech-support alarms, investment promises, generic greetings, click prompts), plus a shouting check.
-  - Link analysis: shortened links, number addresses, odd endings, `@` tricks, and lookalike brand names (for example `paypa1.com`), using character normalization.
-  - A small naive Bayes word model trained on 32 short example messages (`src/js/data.js`) when the page loads. Final score = 80% rules + 20% model.
-- `src/js/app.js`: pages, rendering, highlighting the exact phrases that triggered each finding.
-- The Privacy page shows a counter of network requests made while checking, read from the browser's resource log.
+## What it checks
+- 13 rule checks: pressure, threats, hard-to-trace payment, requests for codes or passwords, prizes, secrecy, trusted-name impersonation, package and toll notices, family-emergency stories, tech-support alarms, investment promises, generic greetings, click prompts.
+- Link analysis: shortened links, number addresses, odd endings, `@` tricks, lookalike brand names such as `paypa1.com`.
+- Email headers: a `From:` name that doesn't match its address, or a different `Reply-To`.
+- Disguised letters (mixed alphabets) and hidden characters.
+- A small naive Bayes word model, trained in the browser on 48 short messages, contributes 20% of the score. Rules contribute 80%.
+- Input over 5,000 characters is truncated, and the page says so.
 
-## Limits (say these honestly)
-- Pasted text only. Screenshot reading (OCR) is a planned next step.
-- The word model is tiny, so the rules do most of the work. It can miss new scams and flag real messages.
-- It analyzes the text of a link, never opens it, so it can't tell if a site's content is dangerous.
+## Accessibility
+Large type, text size buttons, a high-contrast mode, keyboard-friendly pages, focus moves to the page heading or result, light and dark mode, reduced-motion respected. Only your text-size and contrast choices are stored, in your browser.
 
-## Technical challenge (draft answer, edit in your own words)
-The hardest part was catching scams without sending anyone's message to a server, and without crying wolf. A rule list alone either missed scams or flagged normal texts, such as a real "do not share this code" message. I fixed that by adding negation handling to the rules, combining signals (a link plus urgency scores higher than either alone), and adding a small word model that I wrote from scratch and train in the browser. I also wrote tests with real-looking scams and normal messages so that changing a rule can't quietly break the others. Finally, I made the explanations short and plain so that a grandparent could understand them.
+## Limits
+- Pasted text only. Reading screenshots (OCR) is a planned next step.
+- Examples and the test set are written by the developer. Real-world accuracy is likely lower.
+- It reads link text but never opens a link.
 
-## Demo video outline (under 3 minutes)
-1. Problem: scam texts target older adults, and most checkers want you to upload your private message.
-2. Paste the bank-text example and show the score, the plain reasons, and the marked-up message.
-3. Show a real reminder scoring low, to prove it doesn't cry wolf.
-4. Privacy page: turn on airplane mode, check a message, show the network counter at 0.
-5. One sentence on the hardest part (above).
-
-## Before you submit
-- [ ] Confirm your district's deadline and rules. One project, one district.
-- [ ] Add your name, school and district below.
-- [ ] Disclose any AI help you used, exactly and honestly.
-- [ ] Try it on your phone and on a laptop, in light and dark mode.
-
-Team: (your name)  School: (your school)  District: (your Georgia district)
-AI use disclosure: (describe any AI assistance honestly)
+## Files
+`src/js/analyzer.js` (the checker, no DOM, no network), `src/js/data.js` (training, test and practice messages), `src/js/app.js` (interface), `src/css/style.css`, `src/pwa/` (offline files), `build.py`, `tests/`.
