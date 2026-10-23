@@ -28,6 +28,7 @@ var URL_RE=/(?:https?:\/\/|www\.)[^\s<>"')]+|\b[a-z0-9][a-z0-9-]*(?:\.[a-z0-9-]+
 function extractUrls(text){var out=[],m;URL_RE.lastIndex=0;while((m=URL_RE.exec(text))){var raw=m[0].replace(/[.,;:!?]+$/,"");if(m.index>0&&text.charAt(m.index-1)==="@")continue;out.push({raw:raw,start:m.index,end:m.index+raw.length})}return out}
 function norm(h){return h.replace(/rn/g,"m").replace(/0/g,"o").replace(/1/g,"l").replace(/3/g,"e").replace(/\$/g,"s")}
 var NAMES={paypal:"PayPal",usps:"USPS",fedex:"FedEx",ups:"UPS",irs:"the IRS",wellsfargo:"Wells Fargo",bankofamerica:"Bank of America",citibank:"Citibank"};
+function genuine(h,b){var L=h.split("."),tld=L[L.length-1],first=L.length>1?L[L.length-2]:h;return(first===b&&/^(com|gov|org)$/.test(tld))||(L.length>=3&&/^(co|com)$/.test(first)&&L[L.length-3]===b)}
 function cap(s){return NAMES[s]||s.charAt(0).toUpperCase()+s.slice(1)}
 function analyzeUrl(u){
   var s=u.raw.replace(/^https?:\/\//i,""),auth=s.split(/[\/?#]/)[0],at=false;
@@ -42,11 +43,31 @@ function analyzeUrl(u){
   var n=norm(h);
   for(var i=0;i<BRANDS.length;i++){var b=BRANDS[i];
     if(n.indexOf(b)>-1){
-      var ok=(first===b&&/^(com|gov|org)$/.test(tld))||(L.length>=3&&/^(co|com)$/.test(first)&&L[L.length-3]===b);
+      var ok=genuine(h,b);
       if(!ok){f.push("The name imitates "+cap(b)+", but the real website here is "+reg+".");break}
     }}
   return {raw:u.raw,host:h,flags:f,start:u.start,end:u.end};
 }
+
+var FROM_RE=/^[ \t]*(from|reply-to)[ \t]*:[ \t]*(.+)$/gim;
+function senderChecks(text){
+  var froms=[],reps=[],m,notes=[],marks=[];
+  FROM_RE.lastIndex=0;
+  while((m=FROM_RE.exec(text))){
+    var em=m[2].match(/<?([A-Z0-9._%+-]+)@([A-Z0-9.-]+\.[A-Z]{2,})>?/i);if(!em)continue;
+    var o={name:m[2].replace(/<.*$/,"").replace(/["']/g,"").trim().toLowerCase().replace(/[^a-z]/g,""),dom:em[2].toLowerCase(),s:m.index,e:m.index+m[0].length};
+    (/^reply/i.test(m[1])?reps:froms).push(o);
+  }
+  froms.forEach(function(f){
+    var hit=false;
+    analyzeUrl({raw:f.dom}).flags.forEach(function(x){notes.push("Sender address "+f.dom+": "+x);hit=true});
+    BRANDS.forEach(function(b){if(f.name.indexOf(b)>-1&&!genuine(f.dom,b)){notes.push("The sender’s name says "+cap(b)+", but the address is "+f.dom+".");hit=true}});
+    reps.forEach(function(r){if(r.dom.split(".").slice(-2).join(".")!==f.dom.split(".").slice(-2).join(".")){notes.push("Replies go to "+r.dom+", not to "+f.dom+".");hit=true;marks.push({s:r.s,e:r.e})}});
+    if(hit)marks.push({s:f.s,e:f.e});
+  });
+  return {notes:notes,marks:marks};
+}
+var MIXED=/[A-Za-z][\u0370-\u03FF\u0400-\u04FF]|[\u0370-\u03FF\u0400-\u04FF][A-Za-z]/g,HIDDEN=/[\u200B-\u200D\u2060\uFEFF]/g,MAXLEN=5000;
 
 // Tiny naive Bayes word model, trained when the page loads from the example messages in data.js.
 var MODEL=null;
@@ -68,6 +89,7 @@ function classify(text){
 
 function analyze(text){
   text=String(text||"");
+  var truncated=text.length>MAXLEN;if(truncated)text=text.slice(0,MAXLEN);
   var findings=[],marks=[],raw=0,ids={};
   RULES.forEach(function(r){
     var hits=findAll(r.re,text,r.neg);
@@ -78,6 +100,11 @@ function analyze(text){
   });
   var words=text.match(/[A-Za-z]{3,}/g)||[],caps=words.filter(function(w){return w===w.toUpperCase()}).length;
   if((caps>=4&&caps/Math.max(words.length,1)>0.3)||/!{3,}/.test(text)){ids.shout=1;raw+=6;findings.push({id:"shout",w:6,title:"Shouting",why:"ALL CAPS and lots of exclamation marks are used to alarm you.",tip:"Calm, official messages rarely shout.",snips:[]})}
+  var sc=senderChecks(text);
+  if(sc.notes.length){ids.sender=1;raw+=Math.min(40,24+8*sc.notes.length);findings.push({id:"sender",w:34,title:"The sender doesn’t add up",why:"The name shown and the real address don’t match, or the address imitates a real company.",tip:"Don’t reply. Contact the company using a number or website you already know.",snips:sc.notes});sc.marks.forEach(function(k){marks.push({s:k.s,e:k.e,id:"sender"})})}
+  var mixed=findAll(MIXED,text);
+  if(mixed.length){ids.homoglyph=1;raw+=28;findings.push({id:"homoglyph",w:30,title:"Disguised letters",why:"Some letters come from other alphabets and look identical to ours. Scammers use them to imitate real names and slip past filters.",tip:"Treat the message as fake unless you can confirm it another way.",snips:[]});mixed.forEach(function(h){marks.push({s:h[0],e:h[1],id:"homoglyph"})})}
+  if(HIDDEN.test(text)){ids.hidden=1;raw+=10;findings.push({id:"hidden",w:10,title:"Hidden characters",why:"Invisible characters are sometimes used to hide a message from spam filters.",tip:"Be extra careful with this one.",snips:[]})}
   var links=extractUrls(text).map(analyzeUrl),bad=links.filter(function(l){return l.flags.length}),nf=0;
   bad.forEach(function(l){nf+=l.flags.length;marks.push({s:l.start,e:l.end,id:"links"})});
   if(bad.length){ids.links=1;raw+=Math.min(40,20+8*nf);findings.push({id:"links",w:30,title:"A suspicious link",why:"The web address looks fake or hides where it goes. Scammers copy real sites to steal passwords.",tip:"Don’t tap it. Type the company’s real web address yourself.",snips:bad.map(function(l){return l.host})})}
@@ -85,11 +112,21 @@ function analyze(text){
   if(ids.links&&(ids.urgency||ids.threat))bonus+=10;
   if(ids.payment&&(ids.urgency||ids.secrecy||ids.impersonation||ids.family))bonus+=10;
   if(ids.secrets&&(ids.links||ids.impersonation))bonus+=8;
+  if(ids.sender&&(ids.urgency||ids.threat||ids.secrets))bonus+=10;
   var rule=Math.min(100,raw+bonus),nb=text.trim()?classify(text):0;
   var score=text.trim()?Math.round(rule*0.8+nb*100*0.2):0;
   findings.sort(function(a,b){return b.w-a.w});
-  return {score:score,level:score>=55?"scam":score>=25?"warn":"ok",rule:rule,model:nb,findings:findings,links:links,marks:marks};
+  return {score:score,level:score>=55?"scam":score>=25?"warn":"ok",rule:rule,model:nb,truncated:truncated,findings:findings,links:links,marks:marks};
 }
-var api={analyze:analyze,classify:classify,analyzeUrl:analyzeUrl,extractUrls:extractUrls,RULES:RULES};
+function evaluate(set){
+  var r={n:set.length,scamN:0,legitN:0,caught:0,strong:0,falseFlags:0,falseStrong:0,misses:[]};
+  set.forEach(function(x){
+    var res=analyze(x.text);
+    if(x.scam){r.scamN++;if(res.score>=25)r.caught++;else r.misses.push({text:x.text,scam:true,score:res.score});if(res.score>=55)r.strong++}
+    else{r.legitN++;if(res.score>=25){r.falseFlags++;r.misses.push({text:x.text,scam:false,score:res.score})}if(res.score>=55)r.falseStrong++}
+  });
+  r.accuracy=(r.caught+r.legitN-r.falseFlags)/r.n;return r;
+}
+var api={evaluate:evaluate,analyze:analyze,classify:classify,analyzeUrl:analyzeUrl,extractUrls:extractUrls,RULES:RULES};
 if(typeof module!=="undefined"&&module.exports)module.exports=api;else root.Analyzer=api;
 })(this);
