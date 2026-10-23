@@ -22,4 +22,19 @@ t("real brand domains are not flagged",()=>["https://www.paypal.com/signin","htt
 t("emails are not mistaken for links",()=>assert.strictEqual(A.extractUrls("write to clerk@peachtreefalls.gov today").length,0));
 t("do-not-share codes are not treated as a request",()=>assert.ok(!A.analyze("Your code is 123456. Do not share it.").findings.some(f=>f.id==="secrets")));
 t("empty text scores zero",()=>assert.strictEqual(A.analyze("").score,0));
+t("a sender name that doesn't match its address is flagged",()=>{
+  const bad=A.analyze("From: PayPal Support <help@paypa1-security.com>\nYour account is limited. Verify your identity today.");
+  assert.ok(bad.findings.some(f=>f.id==="sender"));
+  const good=A.analyze("From: PayPal <service@paypal.com>\nYou received $25.00 from Sam.");
+  assert.ok(!good.findings.some(f=>f.id==="sender"));
+});
+t("mixed-alphabet lookalike letters are flagged",()=>assert.ok(A.analyze("Your P\u0430yPal account needs attention").findings.some(f=>f.id==="homoglyph")));
+t("very long and dotted input stays fast",()=>{
+  const t0=Date.now();const r=A.analyze("a.".repeat(100000));A.analyze("http://".repeat(800));
+  assert.ok(r.truncated);assert.ok(Date.now()-t0<1500,"took "+(Date.now()-t0)+"ms");
+});
+t("held-out set: most scams warned, no real messages flagged",()=>{
+  const r=A.evaluate(D.TESTSET);
+  assert.ok(r.caught/r.scamN>=0.8,"caught "+r.caught);assert.ok(r.falseFlags<=2,"false flags "+r.falseFlags);
+});
 console.log(n+" tests passed");
