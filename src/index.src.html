@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Second Look: check a message before you act</title>
+<meta name="description" content="Paste a suspicious text or email and get plain-language warning signs. Everything is checked on your device.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='14' r='9' fill='none' stroke='%230b5fa5' stroke-width='4'/%3E%3Cpath d='M21 21l8 8' stroke='%230b5fa5' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site">
+  <a class="brand" href="#/" aria-label="Second Look, home">
+    <svg viewBox="0 0 32 32" width="30" height="30" aria-hidden="true"><circle cx="14" cy="14" r="9" fill="none" stroke="currentColor" stroke-width="4"/><path d="M21 21l8 8" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
+    <span>Second Look</span>
+  </a>
+  <nav aria-label="Main">
+    <a href="#/" data-p="home">Home</a>
+    <a href="#/check" data-p="check">Check a message</a>
+    <a href="#/learn" data-p="learn">Common scams</a>
+    <a href="#/privacy" data-p="privacy">Privacy</a>
+  </nav>
+</header>
+
+<main id="main">
+<section id="p-home" class="page">
+  <div class="hero">
+    <div>
+      <h1>Not sure about a message? Take a second look.</h1>
+      <p class="lead">Paste a text or email and Second Look points out the warning signs in plain words. Your message never leaves this device.</p>
+      <div class="actions"><a class="btn primary" href="#/check">Check a message</a><a class="btn" href="#/privacy">How your privacy is protected</a></div>
+    </div>
+    <div class="card demo" aria-label="Example result"><p class="meta">Example: a text claiming to be from a bank</p><div id="demo"></div></div>
+  </div>
+  <h2 class="sec">How it works</h2>
+  <ol class="steps">
+    <li><strong>Paste it.</strong> Copy the text or email and paste it into the box.</li>
+    <li><strong>We look for warning signs.</strong> Pressure, threats, strange payments and fake links are checked on your device.</li>
+    <li><strong>You decide.</strong> You get a score, the reasons in plain words, and what to do next.</li>
+  </ol>
+  <h2 class="sec">What it looks for</h2>
+  <ul class="pills" id="pills"></ul>
+</section>
+
+<section id="p-check" class="page" hidden>
+  <h1>Check a message</h1>
+  <p class="lead">Paste the whole message below. Nothing is sent anywhere.</p>
+  <div class="card">
+    <label for="msg">The message</label>
+    <textarea id="msg" rows="7" placeholder="Paste a text message or email here"></textarea>
+    <p id="err" class="err" role="alert" hidden></p>
+    <div class="actions"><button class="btn primary" id="run">Check this message</button><button class="btn" id="clear">Clear</button></div>
+    <p class="meta">No example handy? Try one:</p>
+    <div class="chips" id="examples"></div>
+  </div>
+  <div id="result" hidden aria-live="polite"></div>
+</section>
+
+<section id="p-learn" class="page" hidden>
+  <h1>Common scams</h1>
+  <p class="lead">Scammers reuse the same few stories. Knowing them makes them easy to spot.</p>
+  <div class="grid" id="scams"></div>
+  <div class="card">
+    <h2>If you think you’ve been scammed</h2>
+    <ul>
+      <li>If you shared card or bank details, call your bank right away.</li>
+      <li>Report it at <a href="https://reportfraud.ftc.gov" rel="noopener">reportfraud.ftc.gov</a> and, for internet crimes, <a href="https://www.ic3.gov" rel="noopener">ic3.gov</a>.</li>
+      <li>Tell family or a friend. Scams work best in secret, and shame helps nobody.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="p-privacy" class="page" hidden>
+  <h1>Your message stays on your device</h1>
+  <p class="lead">Scam messages are personal. Second Look was built so we never need to see yours.</p>
+  <div class="grid three">
+    <div class="card"><h2>No uploads</h2><p>The check runs inside this page, on your phone or computer. There is no server that receives your message.</p></div>
+    <div class="card"><h2>No history</h2><p>We don’t save what you paste. Close the tab and it’s gone.</p></div>
+    <div class="card"><h2>No accounts</h2><p>You don’t sign in, and there are no ads or trackers in this page.</p></div>
+  </div>
+  <div class="card">
+    <h2>Check it yourself</h2>
+    <p>Open this page, then turn on airplane mode and check a message. It still works, because nothing needs the internet.</p>
+    <p class="proof"><span>Network requests made while checking messages</span> <strong id="netcount">0</strong></p>
+    <p class="meta">This counter is read from your browser’s own resource log each time you check a message.</p>
+  </div>
+  <div class="card">
+    <h2>How the checking works</h2>
+    <p>Two layers work together, both inside the page:</p>
+    <ul>
+      <li><strong>Rules.</strong> <span id="ruleCount"></span> checks look for pressure, threats, payment requests, private-information requests, and fake or lookalike links. Each finding comes with a plain-language reason.</li>
+      <li><strong>A small word model.</strong> A naive Bayes classifier learns from <span id="corpusCount"></span> short example messages when the page loads. It adds a gentle nudge to the score (20%), and the rules carry the rest.</li>
+    </ul>
+    <p class="meta">This is a helper, not a guarantee. It can miss new scams and flag real messages. When in doubt, contact the company using a number you already trust.</p>
+  </div>
+</section>
+</main>
+
+<footer class="site"><p>Built for the Congressional App Challenge. Second Look runs on your device and is not legal or financial advice.</p></footer>
+
+<script src="js/data.js"></script>
+<script src="js/analyzer.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
