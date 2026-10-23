@@ -6,6 +6,7 @@
 <title>Second Look: check a message before you act</title>
 <meta name="description" content="Paste a suspicious text or email and get plain-language warning signs. Everything is checked on your device.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='14' cy='14' r='9' fill='none' stroke='%230b5fa5' stroke-width='4'/%3E%3Cpath d='M21 21l8 8' stroke='%230b5fa5' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="manifest" href="manifest.webmanifest">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -17,10 +18,17 @@
   </a>
   <nav aria-label="Main">
     <a href="#/" data-p="home">Home</a>
-    <a href="#/check" data-p="check">Check a message</a>
-    <a href="#/learn" data-p="learn">Common scams</a>
+    <a href="#/check" data-p="check">Check</a>
+    <a href="#/practice" data-p="practice">Practice</a>
+    <a href="#/learn" data-p="learn">Learn</a>
+    <a href="#/accuracy" data-p="accuracy">Accuracy</a>
     <a href="#/privacy" data-p="privacy">Privacy</a>
   </nav>
+  <div class="tools" role="group" aria-label="Display settings">
+    <button id="smaller" type="button" aria-label="Smaller text">A−</button>
+    <button id="bigger" type="button" aria-label="Larger text">A+</button>
+    <button id="contrast" type="button" aria-pressed="false">High contrast</button>
+  </div>
 </header>
 
 <main id="main">
@@ -32,6 +40,11 @@
       <div class="actions"><a class="btn primary" href="#/check">Check a message</a><a class="btn" href="#/privacy">How your privacy is protected</a></div>
     </div>
     <div class="card demo" aria-label="Example result"><p class="meta">Example: a text claiming to be from a bank</p><div id="demo"></div></div>
+  </div>
+  <div class="grid three feat">
+    <a class="card" href="#/check"><h2>Check a message</h2><p>Paste a text or email and see the warning signs.</p></a>
+    <a class="card" href="#/practice"><h2>Practice</h2><p>Test your own eye with ten quick messages.</p></a>
+    <a class="card" href="#/learn"><h2>Print a wallet card</h2><p>A pocket reminder and who to call in Georgia.</p></a>
   </div>
   <h2 class="sec">How it works</h2>
   <ol class="steps">
@@ -57,10 +70,44 @@
   <div id="result" hidden aria-live="polite"></div>
 </section>
 
+<section id="p-practice" class="page" hidden>
+  <h1>Practice spotting scams</h1>
+  <p class="lead">Ten quick messages. Decide if each is a scam or looks real, then see why.</p>
+  <div class="card" id="quiz"></div>
+</section>
+
+<section id="p-accuracy" class="page" hidden>
+  <h1>How well does it work?</h1>
+  <p class="lead">Test it yourself, right here. The mistakes are shown too.</p>
+  <div class="card"><button class="btn primary" id="runEval" type="button">Run the test now</button><div id="evalOut" aria-live="polite"></div></div>
+  <div class="card">
+    <h2>Read this before trusting the numbers</h2>
+    <ul>
+      <li>The test messages were never used to train the word model, but they were written by the developer, so results are likely better than in the real world.</li>
+      <li>Weights were set by judgment and adjusted on a handful of examples. The test set was scored once, with no changes afterward.</li>
+      <li>“Warning” means Be careful or Likely a scam. “Likely scam” is a stricter label, so some scams only reach Be careful.</li>
+      <li>New scam styles can slip through. Treat Second Look as a second opinion, not a guarantee.</li>
+    </ul>
+  </div>
+</section>
+
 <section id="p-learn" class="page" hidden>
   <h1>Common scams</h1>
   <p class="lead">Scammers reuse the same few stories. Knowing them makes them easy to spot.</p>
   <div class="grid" id="scams"></div>
+  <div class="card">
+    <h2>Help in Georgia</h2>
+    <ul>
+      <li><strong>Georgia Attorney General’s Consumer Protection Division:</strong> <a href="https://consumer.georgia.gov" rel="noopener">consumer.georgia.gov</a>. Call (404) 651-8600, or toll-free in Georgia (800) 869-1123.</li>
+      <li>That site also has a Consumer Protection Guide for Older Adults.</li>
+    </ul>
+  </div>
+  <div class="card wallet" id="wallet">
+    <h2>Before you click, tap or pay</h2>
+    <ol><li>Pause. Scams rush you.</li><li>Don’t use links or phone numbers in the message.</li><li>Call a number you already trust.</li><li>Never pay with gift cards, wire transfers or crypto.</li><li>Tell someone you trust.</li></ol>
+    <p>Report scams: reportfraud.ftc.gov. In Georgia: (800) 869-1123.</p>
+  </div>
+  <p><button class="btn" id="print" type="button">Print this card</button></p>
   <div class="card">
     <h2>If you think you’ve been scammed</h2>
     <ul>
@@ -92,6 +139,7 @@
       <li><strong>Rules.</strong> <span id="ruleCount"></span> checks look for pressure, threats, payment requests, private-information requests, and fake or lookalike links. Each finding comes with a plain-language reason.</li>
       <li><strong>A small word model.</strong> A naive Bayes classifier learns from <span id="corpusCount"></span> short example messages when the page loads. It adds a gentle nudge to the score (20%), and the rules carry the rest.</li>
     </ul>
+    <p>The only thing this page remembers is your text size and contrast choice, stored in your browser. Your messages are never stored.</p>
     <p class="meta">This is a helper, not a guarantee. It can miss new scams and flag real messages. When in doubt, contact the company using a number you already trust.</p>
   </div>
 </section>
