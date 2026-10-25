@@ -5,7 +5,7 @@ const SCAMS=[D.EXAMPLES[0].text,D.EXAMPLES[1].text,D.EXAMPLES[2].text,
  "Hi grandma it's me, I'm in jail and need bail money. Please don't tell mom. Send gift cards today!",
  "IRS NOTICE: a warrant will be issued unless you call immediately. Pay with bitcoin to resolve.",
  "Your computer has a virus. Call this number now for tech support."];
-const LEGIT=[D.EXAMPLES[3].text,
+const LEGIT=[D.EXAMPLES.find(e=>e.label==="Appointment").text,
  "Amazon: Your verification code is 482913. Do not share this code with anyone.",
  "Hey, are you free for lunch on Thursday? Let me know what works.",
  "The council meeting moved to 7 PM. Agenda: https://peachtreefalls.gov/agenda",
@@ -37,4 +37,17 @@ t("held-out set: most scams warned, no real messages flagged",()=>{
   const r=A.evaluate(D.TESTSET);
   assert.ok(r.caught/r.scamN>=0.8,"caught "+r.caught);assert.ok(r.falseFlags<=2,"false flags "+r.falseFlags);
 });
+t("new scam types are recognized",()=>{
+  const ids=(s)=>A.analyze(s).findings.map(f=>f.id);
+  assert.ok(ids("I accidentally sent a code to your phone. Can you read it to me?").includes("takeover"));
+  assert.ok(ids("Deposit the cashier's check and send back the difference.").includes("check"));
+  assert.ok(ids("Your electric service will be disconnected today.").includes("utility"));
+});
+t("odd spacing and hidden characters can't hide a phrase",()=>{
+  assert.ok(A.analyze("Buy  gift   cards  and  send  me  the  codes").findings.some(f=>f.id==="payment"));
+  assert.ok(A.analyze("Buy gift\u200Bcards today").findings.some(f=>f.id==="payment"));
+  assert.ok(A.analyze("Buy gift c\u0430rds today").findings.some(f=>f.id==="payment"));
+});
+t("link test set: genuine addresses clean, fake ones flagged",()=>D.LINKSET.forEach(l=>{
+  const n=A.analyzeUrl({raw:l.u}).flags.length;assert.ok(l.fake?n>0:n===0,l.u+" => "+n)}));
 console.log(n+" tests passed");

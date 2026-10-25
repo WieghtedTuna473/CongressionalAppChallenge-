@@ -21,8 +21,17 @@
     <a href="#/check" data-p="check">Check</a>
     <a href="#/practice" data-p="practice">Practice</a>
     <a href="#/learn" data-p="learn">Learn</a>
-    <a href="#/accuracy" data-p="accuracy">Accuracy</a>
-    <a href="#/privacy" data-p="privacy">Privacy</a>
+    <a href="#/help" data-p="help">Get help</a>
+    <details class="more" id="more"><summary>More</summary>
+      <div class="menu">
+        <a href="#/answers" data-p="answers">Answer key</a>
+        <a href="#/words" data-p="words">Words to know</a>
+        <a href="#/family" data-p="family">Family plan</a>
+        <a href="#/accuracy" data-p="accuracy">Accuracy</a>
+        <a href="#/privacy" data-p="privacy">Privacy</a>
+        <a href="#/about" data-p="about">About</a>
+      </div>
+    </details>
   </nav>
   <div class="tools" role="group" aria-label="Display settings">
     <button id="smaller" type="button" aria-label="Smaller text">A−</button>
@@ -43,8 +52,11 @@
   </div>
   <div class="grid three feat">
     <a class="card" href="#/check"><h2>Check a message</h2><p>Paste a text or email and see the warning signs.</p></a>
-    <a class="card" href="#/practice"><h2>Practice</h2><p>Test your own eye with ten quick messages.</p></a>
-    <a class="card" href="#/learn"><h2>Print a wallet card</h2><p>A pocket reminder and who to call in Georgia.</p></a>
+    <a class="card" href="#/practice"><h2>Practice</h2><p>Test your eye on real-looking messages and learn why.</p></a>
+    <a class="card" href="#/answers"><h2>Answer key</h2><p>See every practice message with its answer and explanation.</p></a>
+    <a class="card" href="#/help"><h2>Get help</h2><p>What to do, step by step, if a scam already happened.</p></a>
+    <a class="card" href="#/family"><h2>Family plan</h2><p>A code word and a simple plan to protect each other.</p></a>
+    <a class="card" href="#/words"><h2>Words to know</h2><p>Phishing, spoofing, MFA and more, in plain language.</p></a>
   </div>
   <h2 class="sec">How it works</h2>
   <ol class="steps">
@@ -63,32 +75,35 @@
     <label for="msg">The message</label>
     <textarea id="msg" rows="7" placeholder="Paste a text message or email here"></textarea>
     <p id="err" class="err" role="alert" hidden></p>
-    <div class="actions"><button class="btn primary" id="run">Check this message</button><button class="btn" id="clear">Clear</button></div>
-    <p class="meta">No example handy? Try one:</p>
-    <div class="chips" id="examples"></div>
+    <div class="actions"><button class="btn primary" id="run" type="button">Check this message</button><button class="btn" id="clear" type="button">Clear</button></div>
+    <h2 class="exh">Try an example</h2>
+    <p class="meta">Scam examples</p><div class="chips" id="exScam"></div>
+    <p class="meta">Real messages (to see what a calm result looks like)</p><div class="chips" id="exReal"></div>
   </div>
   <div id="result" hidden aria-live="polite"></div>
 </section>
 
 <section id="p-practice" class="page" hidden>
   <h1>Practice spotting scams</h1>
-  <p class="lead">Ten quick messages. Decide if each is a scam or looks real, then see why.</p>
+  <p class="lead">Decide if each message is a scam or looks real, then see exactly why. Stuck? Tap “I’m not sure” to see the answer.</p>
   <div class="card" id="quiz"></div>
 </section>
 
-<section id="p-accuracy" class="page" hidden>
-  <h1>How well does it work?</h1>
-  <p class="lead">Test it yourself, right here. The mistakes are shown too.</p>
-  <div class="card"><button class="btn primary" id="runEval" type="button">Run the test now</button><div id="evalOut" aria-live="polite"></div></div>
+<section id="p-answers" class="page" hidden>
+  <h1>All questions and answers</h1>
+  <p class="lead">Every practice message with its answer, the clues, and what to do. Use it to study, or to check one you weren’t sure about.</p>
   <div class="card">
-    <h2>Read this before trusting the numbers</h2>
-    <ul>
-      <li>The test messages were never used to train the word model, but they were written by the developer, so results are likely better than in the real world.</li>
-      <li>Weights were set by judgment and adjusted on a handful of examples. The test set was scored once, with no changes afterward.</li>
-      <li>“Warning” means Be careful or Likely a scam. “Likely scam” is a stricter label, so some scams only reach Be careful.</li>
-      <li>New scam styles can slip through. Treat Second Look as a second opinion, not a guarantee.</li>
-    </ul>
+    <div class="filters" role="group" aria-label="Filter messages">
+      <button class="chip" type="button" data-f="all" aria-pressed="true">All</button>
+      <button class="chip" type="button" data-f="scam" aria-pressed="false">Scams</button>
+      <button class="chip" type="button" data-f="real" aria-pressed="false">Real messages</button>
+    </div>
+    <label for="bankSearch">Search the messages</label>
+    <input id="bankSearch" type="search" placeholder="For example: gift card, bank, code">
+    <div class="actions"><button class="btn" id="expand" type="button">Open all</button><button class="btn" id="collapse" type="button">Close all</button></div>
+    <p class="meta" id="bankCount" role="status"></p>
   </div>
+  <div id="bank"></div>
 </section>
 
 <section id="p-learn" class="page" hidden>
@@ -108,12 +123,64 @@
     <p>Report scams: reportfraud.ftc.gov. In Georgia: (800) 869-1123.</p>
   </div>
   <p><button class="btn" id="print" type="button">Print this card</button></p>
+  <p>Already caught in one? Go to <a href="#/help">Get help</a> for step-by-step recovery.</p>
+</section>
+
+<section id="p-words" class="page" hidden>
+  <h1>Words to know</h1>
+  <p class="lead">Scam talk can sound technical. Here is what the common words mean.</p>
+  <div class="grid" id="terms"></div>
+</section>
+
+<section id="p-help" class="page" hidden>
+  <h1>If it already happened</h1>
+  <p class="lead">Scams catch smart, careful people. What matters now is acting quickly. Pick what fits and follow the steps.</p>
+  <div id="helpList"></div>
   <div class="card">
-    <h2>If you think you’ve been scammed</h2>
+    <h2>Where to report</h2>
     <ul>
-      <li>If you shared card or bank details, call your bank right away.</li>
-      <li>Report it at <a href="https://reportfraud.ftc.gov" rel="noopener">reportfraud.ftc.gov</a> and, for internet crimes, <a href="https://www.ic3.gov" rel="noopener">ic3.gov</a>.</li>
-      <li>Tell family or a friend. Scams work best in secret, and shame helps nobody.</li>
+      <li><a href="https://reportfraud.ftc.gov" rel="noopener">reportfraud.ftc.gov</a>: report any scam to the Federal Trade Commission.</li>
+      <li><a href="https://www.ic3.gov" rel="noopener">ic3.gov</a>: report internet crime to the FBI.</li>
+      <li><a href="https://www.identitytheft.gov" rel="noopener">identitytheft.gov</a>: a personal recovery plan if your identity was stolen.</li>
+      <li><a href="https://consumer.georgia.gov" rel="noopener">consumer.georgia.gov</a>: Georgia Attorney General’s Consumer Protection Division, (800) 869-1123 in Georgia.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="p-family" class="page" hidden>
+  <h1>A plan for your family</h1>
+  <p class="lead">Scammers count on people acting alone and in a panic. A small plan you agree on ahead of time takes the panic out.</p>
+  <div class="grid">
+    <div class="card"><h2>1. Choose a family code word</h2><p>Pick a word or phrase only your family knows. If someone calls in an emergency asking for money, even in a familiar voice, ask for the code word. Voice copying software makes a voice alone unreliable.</p></div>
+    <div class="card"><h2>2. Hang up and call back</h2><p>Agree that nobody sends money on a call or message alone. Hang up, then call that person back on a number you already have.</p></div>
+    <div class="card"><h2>3. Talk without blame</h2><p>If someone tells you they were scammed, start with, “Thank you for telling me. Let’s fix this together.” Shame keeps people quiet, and quiet helps scammers.</p></div>
+    <div class="card"><h2>4. Set up protection together</h2><p>Turn on two-step login for email and bank accounts, install updates, and consider a free credit freeze. Do it side by side, so everyone understands it.</p></div>
+  </div>
+  <div class="card famcard" id="famcard">
+    <h2>Our family safety agreement</h2>
+    <p>Our code word: ______________________</p>
+    <p>The person we call first: ______________________ Phone: ______________</p>
+    <ul><li>We never send money, gift cards or codes because of a message or call.</li><li>We hang up and call back on a number we already have.</li><li>We tell each other, with no blame.</li></ul>
+    <p>Report scams: reportfraud.ftc.gov. In Georgia: (800) 869-1123.</p>
+  </div>
+  <p><button class="btn" id="printFam" type="button">Print the agreement</button></p>
+</section>
+
+<section id="p-accuracy" class="page" hidden>
+  <h1>Accuracy: test it yourself</h1>
+  <p class="lead">You shouldn’t have to take anyone’s word for how a scam checker performs. These built-in tests run in your browser, on your device, and show their mistakes.</p>
+  <div class="card">
+    <h2>How the testing works</h2>
+    <p>The test messages were written for this project and were not used to teach the word model. Each test checks something different, and each one explains why it matters. A score of 25 or more earns a warning, and 55 or more is called a likely scam.</p>
+    <p><button class="btn primary" id="runAll" type="button">Run all tests</button></p>
+  </div>
+  <div id="tests"></div>
+  <div class="card">
+    <h2>What these tests do not cover</h2>
+    <ul>
+      <li>They use a fixed set of messages. Scammers change their wording, so new styles can slip through.</li>
+      <li>They check the text of a link, not the website behind it.</li>
+      <li>They measure this checker only. A good score is not a promise about any single message.</li>
     </ul>
   </div>
 </section>
@@ -136,16 +203,26 @@
     <h2>How the checking works</h2>
     <p>Two layers work together, both inside the page:</p>
     <ul>
-      <li><strong>Rules.</strong> <span id="ruleCount"></span> checks look for pressure, threats, payment requests, private-information requests, and fake or lookalike links. Each finding comes with a plain-language reason.</li>
+      <li><strong>Rules.</strong> <span id="ruleCount"></span> checks look for pressure, threats, payment requests, private-information requests, fake or lookalike links and senders, and disguised letters. Each finding comes with a plain-language reason.</li>
       <li><strong>A small word model.</strong> A naive Bayes classifier learns from <span id="corpusCount"></span> short example messages when the page loads. It adds a gentle nudge to the score (20%), and the rules carry the rest.</li>
     </ul>
     <p>The only thing this page remembers is your text size and contrast choice, stored in your browser. Your messages are never stored.</p>
-    <p class="meta">This is a helper, not a guarantee. It can miss new scams and flag real messages. When in doubt, contact the company using a number you already trust.</p>
   </div>
+</section>
+
+<section id="p-about" class="page" hidden>
+  <h1>About Second Look</h1>
+  <div class="card"><h2>Why it exists</h2><p>Scam texts and emails reach people every day, and older adults are often targeted. Most checkers ask you to upload your message. Second Look gives plain-language reasons and keeps the message on your device.</p></div>
+  <div class="card"><h2>Who made it</h2><p>Second Look was designed and built by a student developer in Georgia.</p></div>
+  <div class="card"><h2>How it is built</h2><p>Plain HTML, CSS and JavaScript, with no outside libraries, no servers and no tracking. The checking logic is in one file with its own automated tests, and the word model is small enough to train in your browser in a blink.</p></div>
+  <div class="card"><h2>What’s next</h2><ul><li>Reading text from screenshots on the device.</li><li>Spanish and other languages.</li><li>More practice messages and scam types.</li></ul></div>
 </section>
 </main>
 
-<footer class="site"><p>Built for the Congressional App Challenge. Second Look runs on your device and is not legal or financial advice.</p></footer>
+<footer class="site">
+  <p>Second Look runs on your device and is not legal or financial advice.</p>
+  <p class="sitemap"><a href="#/">Home</a> <a href="#/check">Check</a> <a href="#/practice">Practice</a> <a href="#/answers">Answer key</a> <a href="#/learn">Learn</a> <a href="#/words">Words</a> <a href="#/help">Get help</a> <a href="#/family">Family plan</a> <a href="#/accuracy">Accuracy</a> <a href="#/privacy">Privacy</a> <a href="#/about">About</a></p>
+</footer>
 
 <script src="js/data.js"></script>
 <script src="js/analyzer.js"></script>
