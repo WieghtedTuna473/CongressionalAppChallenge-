@@ -114,3 +114,4 @@ dl{margin:0}
 @media print{body *{visibility:hidden}.print-target,.print-target *{visibility:visible}.print-target{position:absolute;left:0;top:0;width:100%;border-color:#000}}
 .row3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
 @media (max-width:640px){.row3{grid-template-columns:1fr}}
+.demo .verdict{grid-template-columns:1fr;text-align:center;gap:8px}.demo .verdict h2{font-size:1.5rem}

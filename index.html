@@ -124,6 +124,7 @@ dl{margin:0}
 @media print{body *{visibility:hidden}.print-target,.print-target *{visibility:visible}.print-target{position:absolute;left:0;top:0;width:100%;border-color:#000}}
 .row3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
 @media (max-width:640px){.row3{grid-template-columns:1fr}}
+.demo .verdict{grid-template-columns:1fr;text-align:center;gap:8px}.demo .verdict h2{font-size:1.5rem}
 </style>
 </head>
 <body>
@@ -337,7 +338,7 @@ dl{margin:0}
 </main>
 
 <footer class="site">
-  <p>Second Look runs on your device and is not legal or financial advice.</p>
+  <p>Second Look runs on your device and is not legal or financial advice. <span class="meta">Version 2</span></p>
   <p class="sitemap"><a href="#/">Home</a> <a href="#/check">Check</a> <a href="#/practice">Practice</a> <a href="#/answers">Answer key</a> <a href="#/learn">Learn</a> <a href="#/words">Words</a> <a href="#/help">Get help</a> <a href="#/family">Family plan</a> <a href="#/accuracy">Accuracy</a> <a href="#/privacy">Privacy</a> <a href="#/about">About</a></p>
 </footer>
 
@@ -992,7 +993,11 @@ function init(){
   $("smaller").onclick=function(){prefs.size=Math.max(0,prefs.size-1);applyPrefs()};
   $("bigger").onclick=function(){prefs.size=Math.min(3,prefs.size+1);applyPrefs()};
   $("contrast").onclick=function(){prefs.high=!prefs.high;applyPrefs()};
-  if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(function(){});
+  if("serviceWorker" in navigator&&location.protocol==="https:"){
+    var had=!!navigator.serviceWorker.controller,reloaded=false;
+    navigator.serviceWorker.addEventListener("controllerchange",function(){if(had&&!reloaded){reloaded=true;location.reload()}});
+    navigator.serviceWorker.register("sw.js").catch(function(){});
+  }
   window.addEventListener("hashchange",route);route();
 }
 init();

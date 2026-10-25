@@ -277,7 +277,11 @@ function init(){
   $("smaller").onclick=function(){prefs.size=Math.max(0,prefs.size-1);applyPrefs()};
   $("bigger").onclick=function(){prefs.size=Math.min(3,prefs.size+1);applyPrefs()};
   $("contrast").onclick=function(){prefs.high=!prefs.high;applyPrefs()};
-  if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(function(){});
+  if("serviceWorker" in navigator&&location.protocol==="https:"){
+    var had=!!navigator.serviceWorker.controller,reloaded=false;
+    navigator.serviceWorker.addEventListener("controllerchange",function(){if(had&&!reloaded){reloaded=true;location.reload()}});
+    navigator.serviceWorker.register("sw.js").catch(function(){});
+  }
   window.addEventListener("hashchange",route);route();
 }
 init();
